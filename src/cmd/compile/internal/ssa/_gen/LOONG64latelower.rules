@@ -1,0 +1,19 @@
+// Copyright 2024 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// Fold constant shift with extension.
+(SRAVconst (MOVBreg  x) [c]) && c <   8 => (SRAVconst (SLLVconst <typ.Int64> x [56]) [56+c])
+(SRAVconst (MOVHreg  x) [c]) && c <  16 => (SRAVconst (SLLVconst <typ.Int64> x [48]) [48+c])
+(SRAVconst (MOVWreg  x) [c]) && c <  32 => (SRAVconst (SLLVconst <typ.Int64> x [32]) [32+c])
+(SRLVconst (MOVBUreg x) [c]) && c <   8 => (SRLVconst (SLLVconst <typ.UInt64> x [56]) [56+c])
+(SRLVconst (MOVHUreg x) [c]) && c <  16 => (SRLVconst (SLLVconst <typ.UInt64> x [48]) [48+c])
+(SRLVconst (MOVWUreg x) [c]) && c <  32 => (SRLVconst (SLLVconst <typ.UInt64> x [32]) [32+c])
+(SLLVconst (MOVBUreg x) [c]) && c <= 56 => (SRLVconst (SLLVconst <typ.UInt64> x [56]) [56-c])
+(SLLVconst (MOVHUreg x) [c]) && c <= 48 => (SRLVconst (SLLVconst <typ.UInt64> x [48]) [48-c])
+(SLLVconst (MOVWUreg x) [c]) && c <= 32 => (SRLVconst (SLLVconst <typ.UInt64> x [32]) [32-c])
+
+// Shift by zero.
+(SRAVconst x [0]) => x
+(SRLVconst x [0]) => x
+(SLLVconst x [0]) => x

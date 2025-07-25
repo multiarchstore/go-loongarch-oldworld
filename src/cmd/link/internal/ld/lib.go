@@ -925,7 +925,7 @@ func (ctxt *Link) linksetup() {
 	ctxt.loader.SetAttrReachable(moduledata, true)
 	ctxt.Moduledata = moduledata
 
-	if ctxt.Arch == sys.Arch386 && ctxt.HeadType != objabi.Hwindows {
+	if (ctxt.Arch == sys.Arch386 || ctxt.Arch == sys.ArchLoong64) && ctxt.HeadType != objabi.Hwindows {
 		if (ctxt.BuildMode == BuildModeCArchive && ctxt.IsELF) || ctxt.BuildMode == BuildModeCShared || ctxt.BuildMode == BuildModePIE || ctxt.DynlinkingGo() {
 			got := ctxt.loader.LookupOrCreateSym("_GLOBAL_OFFSET_TABLE_", 0)
 			sb := ctxt.loader.MakeSymbolUpdater(got)
@@ -2237,7 +2237,7 @@ func hostlinkArchArgs(arch *sys.Arch) []string {
 			return []string{"-arch", "arm64"}
 		}
 	case sys.Loong64:
-		return []string{"-mabi=lp64d"}
+		return []string{"-mabi=lp64"}
 	case sys.MIPS64:
 		return []string{"-mabi=64"}
 	case sys.MIPS:

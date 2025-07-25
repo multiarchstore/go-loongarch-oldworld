@@ -348,10 +348,18 @@ const (
 	R_LOONG64_GOT_HI
 	R_LOONG64_GOT_LO
 
+	// R_LOONG64_GOT resolves a GOT-relative instruction sequence, usually an pcalau12i
+	// followed by another ld or addi instruction.
+	R_LOONG64_GOT
+
 	// 64-bit in-place addition.
 	R_LOONG64_ADD64
 	// 64-bit in-place subtraction.
 	R_LOONG64_SUB64
+
+	// R_LOONG64_PCREL resolves a PC-relative addresses instruction sequence, usually an pcalau12i
+	// followed by another ld or addi instruction.
+	R_LOONG64_PCREL
 
 	// R_JMP16LOONG64 resolves to 18-bit PC-relative target address of a JMP instructions.
 	R_JMP16LOONG64

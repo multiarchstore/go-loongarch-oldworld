@@ -37,6 +37,7 @@ TEXT runtime·rt0_go(SB),NOSPLIT|TOPFRAME,$0
 	JAL	(R25)
 
 nocgo:
+	JAL	runtime·save_g(SB)
 	// update stackguard after _cgo_init
 	MOVV	(g_stack+stack_lo)(g), R19
 	ADDV	$const_stackGuard, R19
@@ -659,9 +660,9 @@ TEXT runtime·setg(SB), NOSPLIT, $0-8
 	JAL	runtime·save_g(SB)
 	RET
 
-// void setg_gcc(G*); set g called from gcc with g in R19
+// void setg_gcc(G*); set g called from gcc with g in R4
 TEXT setg_gcc<>(SB),NOSPLIT,$0-0
-	MOVV	R19, g
+	MOVV	R4, g
 	JAL	runtime·save_g(SB)
 	RET
 

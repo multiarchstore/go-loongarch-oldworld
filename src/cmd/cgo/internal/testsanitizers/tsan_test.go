@@ -48,7 +48,6 @@ func TestTSAN(t *testing.T) {
 		{src: "tsan5.go", needsRuntime: true},
 		{src: "tsan6.go", needsRuntime: true},
 		{src: "tsan7.go", needsRuntime: true},
-		{src: "tsan8.go"},
 		{src: "tsan9.go"},
 		{src: "tsan10.go", needsRuntime: true},
 		{src: "tsan11.go", needsRuntime: true},

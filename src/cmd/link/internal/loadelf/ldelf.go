@@ -614,6 +614,10 @@ func Load(l *loader.Loader, arch *sys.Arch, localSymVersion int, f *bio.Reader, 
 				continue
 			}
 
+			if arch.Family == sys.Loong64 && (strings.HasPrefix(elfsym.name, ".L") || strings.HasPrefix(elfsym.name, "L0")) {
+			        continue
+			}
+
 			return errorf("%v: sym#%d (%q): ignoring symbol in section %d (%q) (type %d)", elfsym.sym, i, elfsym.name, elfsym.shndx, sect.name, elfsym.type_)
 		}
 
@@ -682,6 +686,9 @@ func Load(l *loader.Loader, arch *sys.Arch, localSymVersion int, f *bio.Reader, 
 			l.SetAttrOnList(s, true)
 			textp = append(textp, s)
 			for ss := l.SubSym(s); ss != 0; ss = l.SubSym(ss) {
+				if arch.Family == sys.Loong64 && (strings.HasPrefix(l.SymName(ss), ".L") || strings.HasPrefix(l.SymName(ss), "L0")) {
+					continue
+				}
 				if l.AttrOnList(ss) {
 					return errorf("symbol %s listed multiple times",
 						l.SymName(ss))
@@ -1027,12 +1034,31 @@ func relSize(arch *sys.Arch, pn string, elftype uint32) (uint8, uint8, error) {
 		return 2, 2, nil
 
 	case LOONG64 | uint32(elf.R_LARCH_MARK_LA)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_PUSH_PCREL)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_PUSH_GPREL)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_PUSH_ABSOLUTE)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_POP_32_S_0_10_10_16_S2)<<16,
 		LOONG64 | uint32(elf.R_LARCH_MARK_PCREL)<<16,
 		LOONG64 | uint32(elf.R_LARCH_ADD24)<<16,
 		LOONG64 | uint32(elf.R_LARCH_ADD32)<<16,
 		LOONG64 | uint32(elf.R_LARCH_SUB24)<<16,
 		LOONG64 | uint32(elf.R_LARCH_SUB32)<<16,
 		LOONG64 | uint32(elf.R_LARCH_B26)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_PUSH_PLT_PCREL)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_PUSH_TLS_GD)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_PUSH_TLS_GOT)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_PUSH_TLS_TPREL)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_SL)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_SR)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_ADD)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_SUB)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_AND)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_POP_32_U_10_12)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_POP_32_S_10_12)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_POP_32_S_10_16)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_POP_32_S_10_16_S2)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_POP_32_S_5_20)<<16,
+		LOONG64 | uint32(elf.R_LARCH_SOP_POP_32_S_0_5_10_16_S2)<<16,
 		LOONG64 | uint32(elf.R_LARCH_32_PCREL)<<16:
 		return 4, 4, nil
 

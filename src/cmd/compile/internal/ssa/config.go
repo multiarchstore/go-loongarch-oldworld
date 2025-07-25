@@ -280,6 +280,8 @@ func NewConfig(arch string, types Types, ctxt *obj.Link, optimize, softfloat boo
 		c.RegSize = 8
 		c.lowerBlock = rewriteBlockLOONG64
 		c.lowerValue = rewriteValueLOONG64
+		c.lateLowerBlock = rewriteBlockLOONG64latelower
+		c.lateLowerValue = rewriteValueLOONG64latelower
 		c.registers = registersLOONG64[:]
 		c.gpRegMask = gpRegMaskLOONG64
 		c.fpRegMask = fpRegMaskLOONG64
@@ -288,6 +290,7 @@ func NewConfig(arch string, types Types, ctxt *obj.Link, optimize, softfloat boo
 		c.FPReg = framepointerRegLOONG64
 		c.LinkReg = linkRegLOONG64
 		c.hasGReg = true
+		c.unalignedOK = true
 	case "s390x":
 		c.PtrSize = 8
 		c.RegSize = 8

@@ -15,7 +15,7 @@ const (
 // not currently described in manpages as of May 2022, but will eventually
 // appear
 // when that happens, see man 7 vdso : loongarch
-var vdsoLinuxVersion = vdsoVersionKey{"LINUX_5.10", 0xae78f70}
+var vdsoLinuxVersion = vdsoVersionKey{"LINUX_2.6", 0x3ae75f6}
 
 var vdsoSymbolKeys = []vdsoSymbolKey{
 	{"__vdso_clock_gettime", 0xd35ec75, 0x6e43a318, &vdsoClockgettimeSym},

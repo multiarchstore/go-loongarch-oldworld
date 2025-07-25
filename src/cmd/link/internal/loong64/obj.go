@@ -31,7 +31,7 @@ func Init() (*sys.Arch, ld.Arch) {
 		Trampoline:       trampoline,
 
 		ELF: ld.ELFArch{
-			Linuxdynld:     "/lib64/ld-linux-loongarch-lp64d.so.1",
+			Linuxdynld:     "/lib64/ld.so.1",
 			LinuxdynldMusl: "/lib/ld-musl-loongarch64.so.1",
 			Freebsddynld:   "XXX",
 			Openbsddynld:   "XXX",

@@ -1751,7 +1751,7 @@ func gccMachine() []string {
 			return []string{"-mabi=32", "-msoft-float"}
 		}
 	case "loong64":
-		return []string{"-mabi=lp64d"}
+		return []string{"-mabi=lp64"}
 	}
 	return nil
 }

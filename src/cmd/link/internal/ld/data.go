@@ -178,7 +178,7 @@ func isPLTCall(arch *sys.Arch, rt objabi.RelocType) bool {
 		return true
 
 	// Loong64
-	case uint32(sys.Loong64) | uint32(objabi.ElfRelocOffset+objabi.RelocType(elf.R_LARCH_B26))<<8:
+	case uint32(sys.Loong64) | uint32(objabi.ElfRelocOffset+objabi.RelocType(elf.R_LARCH_SOP_PUSH_PLT_PCREL))<<8:
 		return true
 	}
 	// TODO: other architectures.

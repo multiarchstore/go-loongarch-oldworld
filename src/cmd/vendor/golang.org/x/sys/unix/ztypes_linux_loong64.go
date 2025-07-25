@@ -191,10 +191,9 @@ const (
 
 type PtraceRegs struct {
 	Regs     [32]uint64
-	Orig_a0  uint64
 	Era      uint64
 	Badv     uint64
-	Reserved [10]uint64
+	Reserved [11]uint64
 }
 
 type FdSet struct {

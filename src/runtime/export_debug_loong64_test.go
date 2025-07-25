@@ -93,135 +93,30 @@ func (h *debugCallHandler) restoreSigContext(ctxt *sigctxt) {
 	ctxt.set_sp(sp)
 }
 
-func getVal32(base uintptr, off uintptr) uint32 {
-	return *(*uint32)(unsafe.Pointer(base + off))
-}
-
-func getVal64(base uintptr, off uintptr) uint64 {
-	return *(*uint64)(unsafe.Pointer(base + off))
-}
-
-func setVal64(base uintptr, off uintptr, val uint64) {
-	*(*uint64)(unsafe.Pointer(base + off)) = val
-}
-
-// Layout for sigcontext on linux/loong64: arch/loongarch/include/uapi/asm/sigcontext.h
-//
-//  sc_extcontext |  sctx_info
-// ------------------------------------------
-//                |  {fpu,lsx,lasx}_context
-//                ---------------------------
-//                |  sctx_info
-//                ---------------------------
-//                |  lbt_context
-//
-
-const (
-	INVALID_MAGIC  uint32 = 0
-	FPU_CTX_MAGIC         = 0x46505501
-	LSX_CTX_MAGIC         = 0x53580001
-	LASX_CTX_MAGIC        = 0x41535801
-	LBT_CTX_MAGIC         = 0x42540001
-)
-
-const (
-	SCTX_INFO_SIZE = 4 + 4 + 8
-	FPU_CTX_SIZE   = 8*32 + 8 + 4  // fpu context size
-	LSX_CTX_SIZE   = 8*64 + 8 + 4  // lsx context size
-	LASX_CTX_SIZE  = 8*128 + 8 + 4 // lasx context size
-	LBT_CTX_SIZE   = 8*4 + 4 + 4   // lbt context size
-)
-
-// storeRegArgs sets up argument registers in the signal context state
-// from an abi.RegArgs.
+// storeRegArgs sets up argument registers in the signal
+// context state from an abi.RegArgs.
 //
 // Both src and dst must be non-nil.
 func storeRegArgs(dst *sigcontext, src *abi.RegArgs) {
 	// R4..R19 are used to pass int arguments in registers on loong64
-	for i := 0; i < abi.IntArgRegs; i++ {
-		dst.sc_regs[i+4] = (uint64)(src.Ints[i])
+	for i, r := range src.Ints {
+		dst.sc_regs[i+4] = uint64(r)
 	}
 
 	// F0..F15 are used to pass float arguments in registers on loong64
-	offset := (uintptr)(0)
-	baseAddr := (uintptr)(unsafe.Pointer(&dst.sc_extcontext))
-
-	for {
-		magic := getVal32(baseAddr, offset)
-		size := getVal32(baseAddr, offset+4)
-
-		switch magic {
-		case INVALID_MAGIC:
-			return
-
-		case FPU_CTX_MAGIC:
-			offset += SCTX_INFO_SIZE
-			for i := 0; i < abi.FloatArgRegs; i++ {
-				setVal64(baseAddr, ((uintptr)(i*8) + offset), src.Floats[i])
-			}
-			return
-
-		case LSX_CTX_MAGIC:
-			offset += SCTX_INFO_SIZE
-			for i := 0; i < abi.FloatArgRegs; i++ {
-				setVal64(baseAddr, ((uintptr)(i*16) + offset), src.Floats[i])
-			}
-			return
-
-		case LASX_CTX_MAGIC:
-			offset += SCTX_INFO_SIZE
-			for i := 0; i < abi.FloatArgRegs; i++ {
-				setVal64(baseAddr, ((uintptr)(i*32) + offset), src.Floats[i])
-			}
-			return
-
-		case LBT_CTX_MAGIC:
-			offset += uintptr(size)
-		}
+	for i, r := range src.Floats {
+		*(*uint64)(unsafe.Pointer(&dst.sc_fpregs[i])) = r
 	}
 }
 
 func loadRegArgs(dst *abi.RegArgs, src *sigcontext) {
 	// R4..R19 are used to pass int arguments in registers on loong64
-	for i := 0; i < abi.IntArgRegs; i++ {
+	for i := range dst.Ints {
 		dst.Ints[i] = uintptr(src.sc_regs[i+4])
 	}
 
 	// F0..F15 are used to pass float arguments in registers on loong64
-	offset := (uintptr)(0)
-	baseAddr := (uintptr)(unsafe.Pointer(&src.sc_extcontext))
-
-	for {
-		magic := getVal32(baseAddr, offset)
-		size := getVal32(baseAddr, (offset + 4))
-
-		switch magic {
-		case INVALID_MAGIC:
-			return
-
-		case FPU_CTX_MAGIC:
-			offset += SCTX_INFO_SIZE
-			for i := 0; i < abi.FloatArgRegs; i++ {
-				dst.Floats[i] = getVal64(baseAddr, (uintptr(i*8) + offset))
-			}
-			return
-
-		case LSX_CTX_MAGIC:
-			offset += SCTX_INFO_SIZE
-			for i := 0; i < abi.FloatArgRegs; i++ {
-				dst.Floats[i] = getVal64(baseAddr, (uintptr(i*16) + offset))
-			}
-			return
-
-		case LASX_CTX_MAGIC:
-			offset += SCTX_INFO_SIZE
-			for i := 0; i < abi.FloatArgRegs; i++ {
-				dst.Floats[i] = getVal64(baseAddr, (uintptr(i*32) + offset))
-			}
-			return
-
-		case LBT_CTX_MAGIC:
-			offset += uintptr(size)
-		}
+	for i := range dst.Floats {
+		dst.Floats[i] = *(*uint64)(unsafe.Pointer(&src.sc_fpregs[i]))
 	}
 }

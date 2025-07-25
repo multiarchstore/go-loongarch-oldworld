@@ -8,7 +8,7 @@
  * void crosscall1(void (*fn)(void), void (*setg_gcc)(void *g), void *g)
  *
  * Calling into the gc tool chain, where all registers are caller save.
- * Called from standard lp64d ABI, where $r1, $r3, $r23-$r30, and $f24-$f31
+ * Called from standard lp64 ABI, where $r1, $r3, $r23-$r30, and $f24-$f31
  * are callee-save, so they must be saved explicitly, along with $r1 (LR).
  */
 .globl crosscall1
@@ -34,10 +34,12 @@ crosscall1:
 	fst.d	$f30, $r3, 136
 	fst.d	$f31, $r3, 144
 
-	move	$r18, $r4 // save R4
-	move	$r19, $r6
-	jirl	$r1, $r5, 0	// call setg_gcc (clobbers R4)
-	jirl	$r1, $r18, 0	// call fn
+	// r4 = *fn, r5 = *setg_gcc, r6 = *g
+	move	$r23, $r4	// save R4
+	move	$r24, $r5
+	move	$r4, $r6
+	jirl	$r1, $r24, 0	// call setg_gcc (clobbers R4)
+	jirl	$r1, $r23, 0	// call fn
 
 	ld.d	$r23, $r3, 8
 	ld.d	$r24, $r3, 16

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build linux && (amd64 || arm64 || ppc64le)
+//go:build linux && (amd64 || arm64 || loong64 || ppc64le)
 
 #include <errno.h>
 #include <stddef.h>
@@ -18,8 +18,13 @@
 typedef struct {
 	uintptr_t handler;
 	uint64_t flags;
+#ifdef __loongarch__
+       uint64_t mask;
+       uintptr_t restorer;
+#else
 	uintptr_t restorer;
 	uint64_t mask;
+#endif
 } go_sigaction_t;
 
 // SA_RESTORER is part of the kernel interface.

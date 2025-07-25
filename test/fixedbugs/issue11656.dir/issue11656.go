@@ -63,6 +63,8 @@ func f(n int) {
 		ill = append(ill, 0xe3, 0x00, 0x00, 0x00, 0x00, 0x24) // MOVD R0, (R0)
 	case "riscv64":
 		binary.LittleEndian.PutUint32(ill, 0x00003023) // MOV X0, (X0)
+	case "loong64":
+		binary.LittleEndian.PutUint32(ill, 0x29c00000) // MOVV R0, (R0)
 	default:
 		// Just leave it as 0 and hope for the best.
 	}

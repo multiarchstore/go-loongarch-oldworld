@@ -28,8 +28,8 @@ const (
 
 	_SA_RESTART  = 0x10000000
 	_SA_ONSTACK  = 0x8000000
+	_SA_RESTORER = 0x0 // Only used on intel
 	_SA_SIGINFO  = 0x4
-	_SA_RESTORER = 0x0
 
 	_SI_KERNEL = 0x80
 	_SI_TIMER  = -0x2
@@ -122,6 +122,29 @@ type itimerval struct {
 	it_value    timeval
 }
 
+type sigactiont struct {
+	sa_handler  uintptr
+	sa_flags    uint64
+	sa_mask     [2]uint64
+	sa_restorer uintptr
+}
+
+type siginfoFields struct {
+	si_signo int32
+	si_errno int32
+	si_code  int32
+	__pad0   [1]int32
+	// below here is a union; si_addr is the only field we use
+	si_addr uint64
+}
+
+type siginfo struct {
+	siginfoFields
+
+	// Pad struct to the max size in the kernel.
+	_ [_si_max_size - unsafe.Sizeof(siginfoFields{})]byte
+}
+
 type sigeventFields struct {
 	value  uintptr
 	signo  int32
@@ -145,30 +168,6 @@ const (
 	_O_CLOEXEC  = 0x80000
 )
 
-type sigactiont struct {
-	sa_handler uintptr
-	sa_flags   uint64
-	sa_mask    uint64
-	// Linux on loong64 does not have the sa_restorer field, but the setsig
-	// function references it (for x86). Not much harm to include it at the end.
-	sa_restorer uintptr
-}
-
-type siginfoFields struct {
-	si_signo int32
-	si_errno int32
-	si_code  int32
-	__pad0   [1]int32
-	// below here is a union; si_addr is the only field we use
-	si_addr uint64
-}
-
-type siginfo struct {
-	siginfoFields
-	// Pad struct to the max size in the kernel.
-	_ [_si_max_size - unsafe.Sizeof(siginfoFields{})]byte
-}
-
 type usigset struct {
 	val [16]uint64
 }
@@ -180,20 +179,29 @@ type stackt struct {
 	ss_size   uintptr
 }
 
+type user_fpregs struct {
+	fpr [32]byte
+}
+
 type sigcontext struct {
-	sc_pc         uint64
-	sc_regs       [32]uint64
-	sc_flags      uint32
-	sc_pad0       [1]uint32
-	sc_extcontext [0]uint64
+	sc_pc       uint64
+	sc_regs     [32]uint64
+	sc_flags    uint32
+	sc_fcsr     uint32
+	sc_vcsr     uint32
+	_pad0       [4]byte
+	sc_fcc      uint64
+	sc_scr      [4]uint64
+	sc_fpregs   [32]user_fpregs
+	sc_reserved [4096]byte
 }
 
 type ucontext struct {
-	uc_flags     uint64
-	uc_link      *ucontext
-	uc_stack     stackt
-	uc_sigmask   usigset
-	uc_x_unused  [0]uint8
-	uc_pad_cgo_0 [8]byte
-	uc_mcontext  sigcontext
+	uc_flags    uint64
+	uc_link     *ucontext
+	uc_stack    stackt
+	_pad0       [24]byte
+	uc_mcontext sigcontext
+	uc_sigmask  uint64
+	_pad1       [120]byte
 }
