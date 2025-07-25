@@ -1,0 +1,45 @@
+name: Build Debian loong64 live cd
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  debian:
+    name: Build go toolchain for ABI1.0
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v5.5.0
+          
+      - name: Build go
+        id: build_go
+        run: |
+          cd src
+          bash all.bash
+
+
+      # - name: Artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: Debian loong64 live cd
+      #     path: ${{ github.workspace }}/*.deb
+      #     compression-level: 0
+      #     if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn`
+
+      # - name: Upload assets to release
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #       files: ${{ github.workspace }}/*.deb
+      #       prerelease: false
+      #       tag_name: ${{ steps.build_deb.outputs.verfsion }}
