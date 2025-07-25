@@ -1,4 +1,4 @@
-name: Build Debian loong64 live cd
+name: Build go for loongarch64 abi1.0
 
 on:
   push:
@@ -30,19 +30,20 @@ jobs:
           cd ..
           goversion=$(head -n 1 VERSION)
           cd ..
-          tar -zcvf "$goversion-linux-amd64.tar.gz" go-loongarch-oldworld
+          tar -zcvf "$goversion-linux-amd64.tar.gz" --exclude=go-loongarch-oldworld/.git go-loongarch-oldworld
+          cp "$goversion-linux-amd64.tar.gz" ./go-loongarch-oldworld/
 
 
       - name: Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Debian loong64 live cd
-          path: ${{ github.workspace }}/../*.tar.gz
+          path: ${{ github.workspace }}/*.tar.gz
           compression-level: 0
           if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn`
 
       - name: Upload assets to release
         uses: softprops/action-gh-release@v2
         with:
-            files: ${{ github.workspace }}/../*.tar.gz
+            files: ${{ github.workspace }}/*.tar.gz
             prerelease: false
