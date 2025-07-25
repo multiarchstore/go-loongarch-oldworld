@@ -27,8 +27,8 @@ jobs:
         run: |
           cd src
           bash all.bash
-          cd ..
           goversion=$(head -n 1 filename)
+          cd ..
           tar -zcvf "$goversion-linux-amd64.tar.gz" go-loongarch-oldworld
 
 
